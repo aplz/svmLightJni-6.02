@@ -23,12 +23,14 @@ package jnisvmlight;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.text.ParseException;
 
 /**
  * SVM classifier model returned by SVM-light.
  *
  * @author Tom Crecelius & Martin Theobald
+ * @author Anja Pilz
  */
 public class SVMLightModel implements Serializable {
 
@@ -112,7 +114,7 @@ public class SVMLightModel implements Serializable {
                             "'. Not an svmlight-model file ?!", 0);
         }
 
-        lfv = SVMLightInterface.getLabeledFeatureVectorsFromURL(file, linecnt);
+		lfv = SVMLightInterface.fromPath(Paths.get(file.toString()), linecnt);
 
         SVMLightModel model =
                 new SVMLightModel(format, kType, dParam, gParam, sParam, rParam, uParam, highFeatIdx, trainDocs, numSupVecs, threshold,
