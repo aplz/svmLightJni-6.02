@@ -19,7 +19,7 @@ cygwin:
 
 osx:
 	make -f Makefile-osx
-    
+
 tidy:
 	rm -f *.o 
 	rm -f donlp2/*.o
@@ -33,4 +33,5 @@ clean:	tidy
 	rm -f svmlight.dll
 	rm -f win-svm_learn*
 	rm -f win-svm_classify*
+	rm -f *.o
 
