@@ -20,6 +20,9 @@ typedef struct javaparamids {
 	jfieldID ID_double_factor;
 	jfieldID ID_intArray_dimensions;
 	jfieldID ID_doubleArray_values;
+	// ADDED
+	jfieldID ID_int_qid;
+
 	// jfieldID ID_int_size;
 	jmethodID ConstructorID_tDataCls;
 	
@@ -39,6 +42,7 @@ typedef struct javaparamids {
 	jfieldID ID_doubleArray_linWeights;
 	jmethodID ConstructorID_SVMLightModelCls;
 	
+
 	
 } JavaParamIDs;
 
@@ -103,6 +107,6 @@ JavaParamIDs* GetJParamIDs(JNIEnv * env, jobjectArray *tdata);
 void createDOCs(JNIEnv * env,JavaParamIDs *JIDs,jobjectArray* tdata,DOC*** docs, double** target, long* totwords, long* totdoc, long* ndocuments);
 void SVMparmInit(KERNEL_CACHE* kernel_cache,LEARN_PARM* learn_parm,KERNEL_PARM* kernel_parm, MODEL* model,JTrainParams* tparam);
 jobject buildModelData(JNIEnv *env, jobject obj, MODEL * model,JavaParamIDs* ids);
-void jinit_traindoc(double doc_label, DOC ***docs, double **label, long max_words_doc, long int *totwords, long int *totdoc, int* dims, double *vals, long* ndocuments, WORD* words, FILE* test);
+void jinit_traindoc(double doc_label, DOC ***docs, double **label, long max_words_doc, long int *totwords, long int *totdoc, int* dims, double *vals, long* ndocuments, WORD* words, FILE* test, double qid);
 int jparse_document(WORD *words, long *queryid, long *slackid, double *costfactor,  long int *numwords, long int max_words_doc, int *dims, double *vals);
 SVECTOR *create_svector2(WORD *words, double factor);
