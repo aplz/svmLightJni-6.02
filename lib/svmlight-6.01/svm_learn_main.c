@@ -18,11 +18,17 @@
 /***********************************************************************/
 
 
-/* uncomment, if you want to use svm-learn out of C++ */
-/* extern "C" { */ 
+/* if svm-learn is used out of C++, define it as extern "C" */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 # include "svm_common.h"
 # include "svm_learn.h"
-/*}*/ 
+
+#ifdef __cplusplus
+}
+#endif
 
 char docfile[200];           /* file with training examples */
 char modelfile[200];         /* file for resulting classifier */
@@ -51,85 +57,6 @@ int main (int argc, char* argv[])
   read_documents(docfile,&docs,&target,&totwords,&totdoc);
   if(restartfile[0]) alpha_in=read_alphas(restartfile,totdoc);
 
-	FILE * dump = NULL;
-	char* traindump = (char *) my_malloc(sizeof(char)*25);
-	sprintf(traindump,"maintraindump%d.dat",1);
-	
-	int lengthcnt = 20;
-	int namecnt=2;
-  while((dump = fopen(traindump,"r+")) != NULL) {
-		fclose(dump);
-		printf("traindump is already there: %s\n",traindump);
-		if (strlen(traindump) >= lengthcnt) {
-			free(traindump);
-			lengthcnt =+ 20; 
-			traindump = (char *) my_malloc(sizeof(char)*lengthcnt);
-		}
-		sprintf(traindump,"maintraindump%d.dat",namecnt++);
-	}
-	
-	printf("------------------------------ Writing traindump to file %s",traindump);
-  if ((dump = fopen(traindump,"w")) == NULL) {
-		perror("Doesnt work!\n");
-		exit(1);
-	}
-	
-	printf("\n|||||||||||||||||||||||||||||||||| dumping ..\n");
-	long int z = 0;
-	long int y = 0;
-  fprintf(dump,"totaldocuments: %ld \n",totdoc);
-	while(z<(totdoc)) {
-    fprintf(dump,"(%ld) (QID: %ld) (CF: %.16g) (SID: %ld) ",docs[z]->docnum,docs[z]->queryid,docs[z]->costfactor,docs[z]->slackid);
-		SVECTOR *v = docs[z]->fvec;
-    fprintf(dump,"(NORM:%.32g) (UD:%s) (KID:%ld) (VL:%p) (F:%.32g) %.32g ",v->twonorm_sq,(v->userdefined == NULL ? "" : v->userdefined),v->kernel_id,v->next,v->factor,target[z]);
-		if (v != NULL && v->words != NULL) {
-			while ((v->words[y]).wnum) {
-				fprintf(dump,"%ld:%.32g ",(v->words[y]).wnum, (v->words[y]).weight);
-				y++;
-			}
-		} else 
-				fprintf(dump, "NULL WORTE\n");
-		fprintf(dump,"\n");
-		y=0;
-		z++;
-  }
-
-	
-	fprintf(dump,"---------------------------------------------------\n");
-	fprintf(dump,"kernel_type: %ld\n",kernel_parm.kernel_type);
-	fprintf(dump,"poly_degree: %ld\n",kernel_parm.poly_degree);
-	fprintf(dump,"rbf_gamma: %.32g\n",kernel_parm.rbf_gamma);
-	fprintf(dump,"coef_lin: %.32g\n",kernel_parm.coef_lin);
-	fprintf(dump,"coef_const: %.32g\n",kernel_parm.coef_const);
-	fprintf(dump,"custom: %s\n",kernel_parm.custom);
-	
-	fprintf(dump,"type: %ld\n",learn_parm.type);
-	fprintf(dump,"svm_c: %.32g\n",learn_parm.svm_c);
-	fprintf(dump,"eps: %.32g\n",learn_parm.eps);
-	fprintf(dump,"svm_costratio: %.32g\n",learn_parm.svm_costratio);
-	fprintf(dump,"transduction_posratio: %.32g\n",learn_parm.transduction_posratio);
-	fprintf(dump,"biased_hyperplane: %ld\n",learn_parm.biased_hyperplane);
-	fprintf(dump,"svm_maxqpsize: %ld\n",learn_parm.svm_maxqpsize);
-	fprintf(dump,"svm_newvarsinqp: %ld\n",learn_parm.svm_newvarsinqp);
-	fprintf(dump,"epsilon_crit: %.32g\n",learn_parm.epsilon_crit);
-	fprintf(dump,"epsilon_shrink: %.32g\n",learn_parm.epsilon_shrink);
-	fprintf(dump,"svm_iter_to_shrink: %ld\n",learn_parm.svm_iter_to_shrink);
-	fprintf(dump,"remove_inconsistent: %ld\n",learn_parm.remove_inconsistent);
-	fprintf(dump,"skip_final_opt_check: %ld\n",learn_parm.skip_final_opt_check);
-	fprintf(dump,"compute_loo: %ld\n",learn_parm.compute_loo);
-	fprintf(dump,"rho: %.32g\n",learn_parm.rho);
-	fprintf(dump,"xa_depth: %ld\n",learn_parm.xa_depth);
-	fprintf(dump,"predfile: %s\n",learn_parm.predfile);
-	fprintf(dump,"alphafile: %s\n",learn_parm.alphafile);
-	fprintf(dump,"epsilon_const: %.32g\n",learn_parm.epsilon_const);
-	fprintf(dump,"epsilon_a: %.32g\n",learn_parm.epsilon_a);
-	fprintf(dump,"opt_precision: %.32g\n",learn_parm.opt_precision);
-	fprintf(dump,"svm_c_steps: %ld\n",learn_parm.svm_c_steps);
-	fprintf(dump,"svm_c_factor: %.32g\n",learn_parm.svm_c_factor);
-	fprintf(dump,"svm_costratio_unlab: %.32g\n",learn_parm.svm_costratio_unlab);
-	fprintf(dump,"svm_unlabbound: %.32g\n",learn_parm.svm_unlabbound);
-
-	
   if(kernel_parm.kernel_type == LINEAR) { /* don't need the cache */
     kernel_cache=NULL;
   }
@@ -155,12 +82,6 @@ int main (int argc, char* argv[])
     svm_learn_optimization(docs,target,totdoc,totwords,&learn_parm,
 			   &kernel_parm,kernel_cache,model,alpha_in);
   }
-	
-	fprintf(dump,"totwords: %ld\n",learn_parm.totwords);
-	
-	printf("|||||||||||||||||||||||||||||||||| z: %ld, totdoc: %ld\n",z,totdoc);
-	
-	fclose(dump);
 
   if(kernel_cache) {
     /* Free the memory used for the cache. */

@@ -116,6 +116,8 @@ int main (int argc, char* argv[])
       }
     }
   }  
+  fclose(predfl);
+  fclose(docfl);
   free(line);
   free(words);
   free_model(model,1);

@@ -6,15 +6,14 @@
 # Thanks to Ralf Herbrich for the initial version.
 #
 
-# SET THIS TO YOUR JAVA HOME DIRECTORY
-JAVAHOME =/opt/java/
-
+JAVAHOME =/usr/lib/j2sdk-1.4.2
 # CFLAGS=   -g -Wall -pedantic  # debugging C-Compiler flags
 CC=gcc
 CFLAGS=-O3 -Wall -I$(JAVAHOME)/include -I$(JAVAHOME)/include/linux
 LD=gcc
 LFLAGS=-O3 -I$(JAVAHOME)/include -I$(JAVAHOME)/include/linux
-LIBS=-L. -lm -lz -L/usr/lib
+LIBS=-L. -lm
+
 
 all: svm_learn_hideo svm_classify svm_shared_lib
 
@@ -27,6 +26,7 @@ tidy:
 clean:	tidy
 	rm -f svm_learn
 	rm -f svm_classify
+	
 
 help:   info
 
@@ -48,6 +48,7 @@ info:
 	@echo "    tidy                removes .o files"
 	@echo
 
+
 svm_learn_hideo_noexe: svm_learn_main.o svm_learn.o svm_common.o svm_hideo.o 
 
 svm_learn_hideo: svm_learn_main.o svm_learn.o svm_common.o svm_hideo.o 
@@ -57,6 +58,7 @@ svm_learn_loqo_noexe: svm_learn_main.o svm_learn.o svm_common.o svm_loqo.o loqo
 
 svm_learn_loqo: svm_learn_main.o svm_learn.o svm_common.o svm_loqo.o loqo
 	$(LD) $(LFLAGS) svm_learn_main.o svm_learn.o svm_common.o svm_loqo.o pr_loqo/pr_loqo.o -o linux-svm_learn $(LIBS)
+
 
 svm_hideo.o: svm_hideo.c
 	$(CC) -c $(CFLAGS) svm_hideo.c -o svm_hideo.o 
@@ -77,10 +79,13 @@ svm_jni.o: svm_jni.c svm_learn.h svm_common.h
 	$(CC) -c $(CFLAGS) svm_jni.c -o svm_jni.o
 
 svm_classify: svm_classify.o svm_common.o
-	$(LD) $(LFLAGS) svm_classify.o svm_common.o $(LIBS) -o linux-svm_classify
+	$(LD) $(LFLAGS) $(LIBS) svm_classify.o svm_common.o -o linux-svm_classify
 
 svm_classify.o: svm_classify.c svm_common.h kernel.h
 	$(CC) -c $(CFLAGS) svm_classify.c -o svm_classify.o
+
+
+
 
 sl_svm_hideo.o: svm_hideo.c
 	$(CC) -fPIC -c $(CFLAGS) svm_hideo.c -o sl_svm_hideo.o 
@@ -103,17 +108,19 @@ sl_svm_jni.o: svm_jni.c svm_learn.h svm_common.h svm_learn_main.o
 sl_svm_classify.o: svm_classify.c svm_common.h kernel.h
 	$(CC) -fPIC -c $(CFLAGS) svm_classify.c -o sl_svm_classify.o
 
+
 svm_static_lib: svm_classify.o svm_learn.o svm_learn_main.o svm_hideo.o svm_common.o svm_jni.o
 	ar rcs svmlight.a svm_classify.o svm_learn.o svm_learn_main.o svm_hideo.o svm_common.o svm_jni.o
 
 svm_shared_lib: sl_svm_classify.o sl_svm_learn.o sl_svm_learn_main.o sl_svm_hideo.o sl_svm_common.o sl_svm_jni.o
-	$(CC) -fPIC -Wall -c svm_classify.c
-	$(LD) -L. -lm -shared -Wl,-soname,libsvmlight.so.0 \
-	    -o libsvmlight-64.so sl_svm_learn.o sl_svm_learn_main.o sl_svm_hideo.o sl_svm_common.o sl_svm_jni.o -lc 
-	cp -vf libsvmlight-64.so ../../lib/.
+	gcc -fPIC -Wall -c svm_classify.c
+	gcc -L. -lm -shared -Wl,-soname,libsvmlight.so.0 \
+	    -o libsvmlight.so sl_svm_learn.o sl_svm_learn_main.o sl_svm_hideo.o sl_svm_common.o sl_svm_jni.o -lc 
+	cp -vf libsvmlight.so ../../lib/.
 #	/sbin/ldconfig -n ../../lib/.
 #	ln -sf libsvmlight.so.0 ../../lib/libsvmlight.so
 	echo "done."
+
 
 loqo: pr_loqo/pr_loqo.o
 

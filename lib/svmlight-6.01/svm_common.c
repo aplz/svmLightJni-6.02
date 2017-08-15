@@ -58,7 +58,7 @@ double classify_example_linear(MODEL *model, DOC *ex)
 }
 
 
-CFLOAT kernel(KERNEL_PARM *kernel_parm, DOC *a, DOC *b) 
+double kernel(KERNEL_PARM *kernel_parm, DOC *a, DOC *b) 
      /* calculate the kernel function */
 {
   double sum=0;
@@ -76,21 +76,21 @@ CFLOAT kernel(KERNEL_PARM *kernel_parm, DOC *a, DOC *b)
   return(sum);
 }
 
-CFLOAT single_kernel(KERNEL_PARM *kernel_parm, SVECTOR *a, SVECTOR *b) 
+double single_kernel(KERNEL_PARM *kernel_parm, SVECTOR *a, SVECTOR *b) 
      /* calculate the kernel function between two vectors */
 {
   kernel_cache_statistic++;
   switch(kernel_parm->kernel_type) {
     case 0: /* linear */ 
-            return((CFLOAT)sprod_ss(a,b)); 
+            return(sprod_ss(a,b)); 
     case 1: /* polynomial */
-            return((CFLOAT)pow(kernel_parm->coef_lin*sprod_ss(a,b)+kernel_parm->coef_const,(double)kernel_parm->poly_degree)); 
+            return(pow(kernel_parm->coef_lin*sprod_ss(a,b)+kernel_parm->coef_const,(double)kernel_parm->poly_degree)); 
     case 2: /* radial basis function */
-            return((CFLOAT)exp(-kernel_parm->rbf_gamma*(a->twonorm_sq-2*sprod_ss(a,b)+b->twonorm_sq)));
+            return(exp(-kernel_parm->rbf_gamma*(a->twonorm_sq-2*sprod_ss(a,b)+b->twonorm_sq)));
     case 3: /* sigmoid neural net */
-            return((CFLOAT)tanh(kernel_parm->coef_lin*sprod_ss(a,b)+kernel_parm->coef_const)); 
+            return(tanh(kernel_parm->coef_lin*sprod_ss(a,b)+kernel_parm->coef_const)); 
     case 4: /* custom-kernel supplied in file kernel.h*/
-            return((CFLOAT)custom_kernel(kernel_parm,a,b)); 
+            return(custom_kernel(kernel_parm,a,b)); 
     default: printf("Error: Unknown kernel function\n"); exit(1);
   }
 }
@@ -106,7 +106,6 @@ SVECTOR *create_svector(WORD *words,char *userdefined,double factor)
     fnum++;
   }
   fnum++;
-  
   vec = (SVECTOR *)my_malloc(sizeof(SVECTOR));
   vec->words = (WORD *)my_malloc(sizeof(WORD)*(fnum));
   for(i=0;i<fnum;i++) { 
@@ -153,14 +152,11 @@ void free_svector(SVECTOR *vec)
 double sprod_ss(SVECTOR *a, SVECTOR *b) 
      /* compute the inner product of two sparse vectors */
 {
-    register CFLOAT sum=0;
+    register double sum=0;
     register WORD *ai,*bj;
     ai=a->words;
     bj=b->words;
-
     while (ai->wnum && bj->wnum) {
-			
-				
       if(ai->wnum > bj->wnum) {
 	bj++;
       }
@@ -168,13 +164,11 @@ double sprod_ss(SVECTOR *a, SVECTOR *b)
 	ai++;
       }
       else {
-	sum+=(CFLOAT)(ai->weight) * (CFLOAT)(bj->weight);
+	sum+=(ai->weight) * (bj->weight);
 	ai++;
 	bj++;
       }
-
     }
-
     return((double)sum);
 }
 
@@ -418,17 +412,17 @@ int featvec_eq(SVECTOR *a, SVECTOR *b)
     bj=b->words;
     while (ai->wnum && bj->wnum) {
       if(ai->wnum > bj->wnum) {
-	if((CFLOAT)(bj->weight) != 0)
+	if((bj->weight) != 0)
 	  return(0);
 	bj++;
       }
       else if (ai->wnum < bj->wnum) {
-	if((CFLOAT)(ai->weight) != 0)
+	if((ai->weight) != 0)
 	  return(0);
 	ai++;
       }
       else {
-	if((CFLOAT)(ai->weight) != (CFLOAT)(bj->weight)) 
+	if((ai->weight) != (bj->weight)) 
 	  return(0);
 	ai++;
 	bj++;
@@ -746,7 +740,6 @@ void read_documents(char *docfile, DOC ***docs, double **label,
       printf("LINE: %s\n",line);
       exit(1);
     }
-
     (*docs)[dnum] = create_example(dnum,queryid,slackid,costfactor,
 				   create_svector(words,comment,1.0));
     /* printf("\nNorm=%f\n",((*docs)[dnum]->fvec)->twonorm_sq);  */
@@ -967,12 +960,13 @@ int isnan(double a)
 int space_or_null(int c) {
   if (c==0)
     return 1;
-  return isspace(c);
+  return isspace((unsigned char)c);
 }
 
 void *my_malloc(size_t size)
 {
   void *ptr;
+  if(size<=0) size=1; /* for AIX compatibility */
   ptr=(void *)malloc(size);
   if(!ptr) { 
     perror ("Out of memory!\n"); 
