@@ -31,9 +31,11 @@ public class LabeledFeatureVector extends FeatureVector implements
 
   protected double m_label;
 
-  protected LabeledFeatureVector() {
-    this(0, null, null);
-  }
+	protected int m_qid;
+
+	protected LabeledFeatureVector() {
+		this(0, null, null);
+	}
 
   public LabeledFeatureVector(double label, int size) {
     super(size);
@@ -58,7 +60,16 @@ public class LabeledFeatureVector extends FeatureVector implements
     this.m_label = label;
   }
 
-  public String toString() {
-    return String.valueOf(m_label*m_factor) + " " + super.toString() + "\n";
-  }
+	@Override
+	public String toString() {
+		return (m_label*m_factor) + " " + super.toString() + "\n";
+	}
+
+	public int getQid() {
+		return this.m_qid;
+	}
+
+	public void setQid(int m_qid) {
+		this.m_qid = m_qid;
+	}
 }
