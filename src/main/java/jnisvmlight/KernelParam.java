@@ -87,6 +87,6 @@ public class KernelParam {
         this.rbf_gamma = 1.0;
         this.coef_lin = 1.0;
         this.coef_const = 0.0;
-        this.custom = new String("empty");
+        this.custom = "empty";
     }
 }
