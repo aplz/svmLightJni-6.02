@@ -21,12 +21,17 @@
 
 package jnisvmlight;
 
-import java.io.BufferedReader;
+import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
+import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The main interface class that transfers the training data to the SVM-light library by a native call. Optionally takes as input an
@@ -34,9 +39,11 @@ import java.util.ArrayList;
  * used by the SVM-light binaries. This class can also be used for native classification calls.
  *
  * @author Tom Crecelius & Martin Theobald, including a bug fix by George Shaw (MIT)
- */
-public class SVMLightInterface {
 
+ * @author Anja Pilz
+ */
+public class SVMLightInterface implements Serializable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SVMLightInterface.class);
     /**
 	 * Apply an in-place quicksort prior to each native training call to SVM-light. SVM-light requires each input feature vector to be
      * sorted in ascending order of dimensions. Disable this option if you are sure to provide sorted vectors already.
@@ -44,112 +51,108 @@ public class SVMLightInterface {
     public static boolean SORT_INPUT_VECTORS = true;
 
     static {
-        System.loadLibrary("svmlight");
+        System.load(System.getProperty("user.dir") + "/src/main/resources/svmlight-64.dll");
     }
 
     /**
      * Reads a set of labeled training vectors from a URL. The format is compatible to the SVM-light training files.
+     *
+     * @param file
+     * @param numOfLinesToSkip
+     *
+     * @return
+     *
+     * @throws ParseException
      */
-    public static LabeledFeatureVector[] getLabeledFeatureVectorsFromURL(URL file, int numOfLinesToSkip) throws ParseException {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static LabeledFeatureVector[] fromPath(Path file, int numOfLinesToSkip) throws ParseException {
 
-        ArrayList<LabeledFeatureVector> data = new ArrayList<LabeledFeatureVector>();
-        LabeledFeatureVector[] traindata = null;
-        BufferedReader bi = null;
+        LOGGER.info("Reading ... " + file);
+        ArrayList data = new ArrayList();
+        LabeledFeatureVector[] trainingData = null;
 
         try {
-
-            bi = new BufferedReader(new InputStreamReader(file.openStream()));
-
-            String line = null;
+            List<String> lines = Files.readAllLines(file);
             int cnt = 0;
-            while ((line = bi.readLine()) != null) {
-
+            for (String line : lines) {
                 if (line.startsWith("#")) {
-
+                    // Skip lines indicated as a comment.
                     continue;
                 }
                 cnt++;
                 if (cnt <= numOfLinesToSkip) {
                     continue;
                 }
-                String label = null;
                 String tokens[] = line.trim().split("[ \\t\\n\\x0B\\f\\r\\[\\]]");
-                int qid = 0;
+                int queryId = 0;
                 if (tokens.length > 2) {
-
-                    label = tokens[0];
+                    String label = tokens[0];
+                    // System.out.println("Label: " + label);
+                    // TODO: was ist factor?
                     String factor = "";
                     if (tokens[1].startsWith("qid")) {
-                        qid = Integer.parseInt(tokens[1].substring(tokens[1].indexOf(":") + 1, tokens[1].length()));
-                        factor = "1.0"; // TODO: a hack. find proper support for reading factors
+                        queryId = Integer.parseInt(tokens[1].substring(tokens[1].indexOf(":") + 1, tokens[1].length()));
+                        // hack: factor is set to 1.0 when reading data like this
+                        // especially when reading the ranking svm training data, the parser does currently not support
+                        // factors
+                        factor = "1.0";
                     } else {
                         factor = tokens[1].substring(0, tokens[1].length() - 1);
                     }
 
-                    ArrayList dimlist = new ArrayList();
-                    ArrayList vallist = new ArrayList();
-                    for (int tokencnt = 2; tokencnt < tokens.length; tokencnt++) {
-                        String dimval = tokens[tokencnt];
-                        if (dimval.trim().startsWith("#")) {
+                    List<String> dimensionsList = Lists.newArrayList();
+                    List<String> valuesList = Lists.newArrayList();
+                    for (int tokenCounter = 2; tokenCounter < tokens.length; tokenCounter++) {
+                        String dimensionValue = tokens[tokenCounter];
+                        if (dimensionValue.trim().startsWith("#")) {
                             break;
                         }
 
-                        int idx = dimval.indexOf(':');
+                        int idx = dimensionValue.indexOf(':');
                         if (idx >= 0) {
-                            String dim = dimval.substring(0, idx);
-                            String val = dimval.substring(idx + 1, dimval.length());
-                            dimlist.add(dim);
-                            vallist.add(val);
+                            dimensionsList.add(dimensionValue.substring(0, idx));
+                            valuesList.add(dimensionValue.substring(idx + 1, dimensionValue.length()));
                         } else {
-                            throw new ParseException(
-                                    "Parse error in FeatureVector of file '" + file.toString() + "' at line: " + cnt + ", token: " +
-                                            tokencnt + ". Could not estimate a \"int:double\" pair ?! " + file.toString() +
-                                            " contains a wrongly defined feature vector!", 0);
+                            throw new ParseException("Parse error in FeatureVector of file '" + file.toString()
+                                    + "' at line: " + cnt + ", token: " + tokenCounter
+                                    + ". Could not estimate a \"int:double\" pair ?! " + file.toString()
+                                    + " contains a wrongly defined feature vector!", 0);
                         }
                     }
-                    if (dimlist.size() > 0) {
-                        double labelvalue = new Double(label).doubleValue();
-                        double factorValue = new Double(factor).doubleValue();
-                        int[] dimarray = new int[dimlist.size()];
-                        double[] valarray = new double[vallist.size()];
-                        for (int i = 0; i < dimlist.size(); i++) {
-                            dimarray[i] = new Integer((String) dimlist.get(i)).intValue();
-                        }
-                        for (int i = 0; i < vallist.size(); i++) {
-                            valarray[i] = new Double((String) vallist.get(i)).doubleValue();
-                        }
-                        LabeledFeatureVector lfv = new LabeledFeatureVector(labelvalue, dimarray, valarray);
-                        lfv.setFactor(factorValue);
-                        lfv.setQid(qid);
-                        data.add(lfv);
+                    if (dimensionsList.size() > 0) {
+                        double labelValue = Double.parseDouble(label);
+                        double factorValue = Double.parseDouble(factor);
+                        int[] dimensions = dimensionsList.stream().mapToInt(Integer::parseInt).toArray();
+                        double[] values = valuesList.stream().mapToDouble(Double::parseDouble).toArray();
+                        LabeledFeatureVector labeledFeatureVector = new LabeledFeatureVector(labelValue, dimensions, values);
+                        labeledFeatureVector.setFactor(factorValue);
+                        labeledFeatureVector.setQid(queryId);
+                        data.add(labeledFeatureVector);
                     }
                 } else {
-                    throw new ParseException("Parse error in FeatureVector of file '" + file.toString() + "' at line: " + cnt + ". " +
-                            " Wrong format of the labeled feature vector?", 0);
+                    throw new ParseException("Parse error in FeatureVector of file '" + file.toString() + "' at line: "
+                            + cnt + ". " + " Wrong format of the labeled feature vector?", 0);
                 }
             }
             if (data.size() > 0) {
-                traindata = new LabeledFeatureVector[data.size()];
+                data.toArray(new LabeledFeatureVector[data.size()]);
+                trainingData = new LabeledFeatureVector[data.size()];
                 for (int i = 0; i < data.size(); i++) {
-                    traindata[i] = (LabeledFeatureVector) data.get(i);
+                    trainingData[i] = (LabeledFeatureVector) data.get(i);
                 }
             } else {
-                throw new ParseException("No labeled features found within " + cnt + "lines of file '" + file.toString() + "'.", 0);
+                throw new ParseException("No labeled features found within " + cnt + "lines of file '"
+                        + file.toString() + "'.", 0);
             }
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        } finally {
-            if (bi != null) {
-                try {
-                    bi.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
         }
-        return traindata;
+        return trainingData;
     }
 
+    /**
+     * Internal usage...
+     */
     protected TrainingParameters m_tp;
 
     /**
