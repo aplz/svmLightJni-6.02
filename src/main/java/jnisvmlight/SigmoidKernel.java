@@ -23,31 +23,30 @@ package jnisvmlight;
 
 /**
  * A kernel with sigmoid smoothing.
- * 
+ *
  * @author Tom Crecelius & Martin Theobald
  */
 public class SigmoidKernel extends ExtendedKernel {
 
-  protected SigmoidKernel() {
-    super(new LinearKernel(), 1.0, 0.0);
-  }
+    protected SigmoidKernel() {
+        super(new LinearKernel(), 1.0, 0.0);
+    }
 
-  public SigmoidKernel(Kernel nestedKernel, double a, double c) {
-    super(nestedKernel, a, c);
-  }
+    public SigmoidKernel(Kernel nestedKernel, double a, double c) {
+        super(nestedKernel, a, c);
+    }
 
-  public double evaluate(FeatureVector v1, FeatureVector v2) {
-    return tanh(m_a * m_kernel.evaluate(v1, v2) + m_c);
-  }
+    public double evaluate(FeatureVector v1, FeatureVector v2) {
+        return tanh(m_a * m_kernel.evaluate(v1, v2) + m_c);
+    }
 
-  private double tanh(double a) {
-    double x = Math.exp(a);
-    double y = Math.exp(-a);
-    return (x - y) / (x + y);
-  }
+    private double tanh(double a) {
+        double x = Math.exp(a);
+        double y = Math.exp(-a);
+        return (x - y) / (x + y);
+    }
 
-  public String toString() {
-    return "Sigmoid kernel K(x, k) = tanh(" + m_a + ".k(x) + " + m_c + ")"
-        + ". k = " + m_kernel.toString();
-  }
+    public String toString() {
+        return "Sigmoid kernel K(x, k) = tanh(" + m_a + ".k(x) + " + m_c + ")" + ". k = " + m_kernel.toString();
+    }
 }

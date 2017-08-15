@@ -22,21 +22,25 @@
 package jnisvmlight;
 
 /**
- * A linear kernel. Computes the scalar (inner) product of two feature vectors
- * and is the default inner kernel of all the other kernel implementations.
- * 
+ * A linear kernel. Computes the scalar (inner) product of two feature vectors and is the default inner kernel of all the other kernel
+ * implementations.
+ *
  * @author Tom Crecelius & Martin Theobald
  */
 public class LinearKernel extends Kernel {
 
-  public double evaluate(FeatureVector fv1, FeatureVector fv2) {
-     double result = 0.0;      
-     int i = 0, j = 0;
-     while (i < fv1.m_dims.length && j < fv2.m_dims.length) {
-       if (fv1.m_dims[i]>fv2.m_dims[j]) j++;
-       else if (fv1.m_dims[i]<fv2.m_dims[j]) i++;
-       else result += (fv1.m_vals[i++] * fv2.m_vals[j++]);
-     }
-     return result;
-   }
+    public double evaluate(FeatureVector fv1, FeatureVector fv2) {
+        double result = 0.0;
+        int i = 0, j = 0;
+        while (i < fv1.m_dims.length && j < fv2.m_dims.length) {
+            if (fv1.m_dims[i] > fv2.m_dims[j]) {
+                j++;
+            } else if (fv1.m_dims[i] < fv2.m_dims[j]) {
+                i++;
+            } else {
+                result += (fv1.m_vals[i++] * fv2.m_vals[j++]);
+            }
+        }
+        return result;
+    }
 }

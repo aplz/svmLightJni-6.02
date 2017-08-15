@@ -23,48 +23,70 @@ package jnisvmlight;
 
 /**
  * Kernel parameters used by SVM-light.
- * 
+ *
  * @author Tom Crecelius & Martin Theobald
  */
 public class KernelParam {
 
-  /** Uses a linear kernel type. */
-  public static final int LINEAR = 0;
+    /**
+     * Uses a linear kernel type.
+     */
+    public static final int LINEAR = 0;
 
-  /** Uses a polynomial kernel type. */
-  public static final int POLYNOMIAL = 1;
+    /**
+     * Uses a polynomial kernel type.
+     */
+    public static final int POLYNOMIAL = 1;
 
-  /** Use a radial base kernel type. */
-  public static final int RBF = 2;
+    /**
+     * Use a radial base kernel type.
+     */
+    public static final int RBF = 2;
 
-  /** Uses as sigmoid kernel type. */
-  public static final int SIGMOID = 3;
+    /**
+     * Uses as sigmoid kernel type.
+     */
+    public static final int SIGMOID = 3;
 
-  /** Constant coefficient for extended kernels. */
-  public double coef_const;
+    /**
+     * Constant coefficient for extended kernels.
+     */
+    public double coef_const;
 
-  /** Linear coefficient for extended kernels. */
-  public double coef_lin;
+    /**
+     * Linear coefficient for extended kernels.
+     */
+    public double coef_lin;
 
-  /** For user supplied kernel. */
-  public String custom;
+    /**
+     * For user supplied kernel.
+     */
+    public String custom;
 
-  /** Selects between LINEAR, POLYNOMIAL, RBF, or SIGMOID kernel type. */
-  public long kernel_type;
+    /**
+     * Selects between LINEAR, POLYNOMIAL, RBF, or SIGMOID kernel type.
+     */
+    public long kernel_type;
 
-  /** Degree of polynomial kernel. */
-  public long poly_degree;
+    /**
+     * Degree of polynomial kernel.
+     */
+    public long poly_degree;
 
-  /** Gamma constant for a radial base kernel. */
-  public double rbf_gamma;
+    /**
+     * Gamma constant for a radial base kernel.
+     */
+    public double rbf_gamma;
 
-  /** Initializes the kernel parameters with the default SVM-light values. */
-  public KernelParam() {
-    this.kernel_type = LINEAR;
-    this.poly_degree = 3;
-    this.rbf_gamma = 1.0;
-    this.coef_lin = 1.0;
-    this.coef_const = 0.0;
-    this.custom = new String("empty");
-  }
+    /**
+     * Initializes the kernel parameters with the default SVM-light values.
+     */
+    public KernelParam() {
+        this.kernel_type = LINEAR;
+        this.poly_degree = 3;
+        this.rbf_gamma = 1.0;
+        this.coef_lin = 1.0;
+        this.coef_const = 0.0;
+        this.custom = new String("empty");
+    }
 }

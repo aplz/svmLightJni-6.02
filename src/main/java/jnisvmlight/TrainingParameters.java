@@ -23,55 +23,53 @@ package jnisvmlight;
 
 /**
  * The TrainingParameters object combines the KernelParm and LearnParam objects.
- * 
+ *
  * @author Tom Crecelius & Martin Theobald
  */
 public class TrainingParameters {
 
-  private KernelParam m_kp;
+    private KernelParam m_kp;
 
-  private LearnParam m_lp;
+    private LearnParam m_lp;
 
-  /**
-   * Initializes the training parameters with the default values for the kernel
-   * and the learning parameters.
-   */
-  public TrainingParameters() {
-    this(new LearnParam(), new KernelParam());
-  }
-
-  /**
-   * Initializes the training parameters with customized values for the kernel
-   * and the learning parameters.
-   */
-  public TrainingParameters(LearnParam lp, KernelParam kp) {
-    m_lp = lp;
-    m_kp = kp;
-  }
-
-  public LearnParam getLearningParameters() {
-    return m_lp;
-  }
-
-  public KernelParam getKernelParameters() {
-    return m_kp;
-  }
-
-  public void setLearningParameters(LearnParam lp) {
-    this.m_lp = lp;
-  }
-
-  public void setKernelParameters(KernelParam kp) {
-    this.m_kp = kp;
-  }
-
-  public TrainingParameters(String[] argv) {
-    this();
-    m_lp.argc = argv.length;
-    if (argv.length > 1 && (argv.length % 2) == 0) {
-      m_lp.argv = argv;
-    } else {
-      System.err.println("Wrong number of arguments!");
+    /**
+     * Initializes the training parameters with the default values for the kernel and the learning parameters.
+     */
+    public TrainingParameters() {
+        this(new LearnParam(), new KernelParam());
     }
-  }
+
+    /**
+     * Initializes the training parameters with customized values for the kernel and the learning parameters.
+     */
+    public TrainingParameters(LearnParam lp, KernelParam kp) {
+        m_lp = lp;
+        m_kp = kp;
+    }
+
+    public LearnParam getLearningParameters() {
+        return m_lp;
+    }
+
+    public KernelParam getKernelParameters() {
+        return m_kp;
+    }
+
+    public void setLearningParameters(LearnParam lp) {
+        this.m_lp = lp;
+    }
+
+    public void setKernelParameters(KernelParam kp) {
+        this.m_kp = kp;
+    }
+
+    public TrainingParameters(String[] argv) {
+        this();
+        m_lp.argc = argv.length;
+        if (argv.length > 1 && (argv.length % 2) == 0) {
+            m_lp.argv = argv;
+        } else {
+            System.err.println("Wrong number of arguments!");
+        }
+    }
 }

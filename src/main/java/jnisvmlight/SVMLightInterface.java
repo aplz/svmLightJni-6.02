@@ -29,198 +29,200 @@ import java.text.ParseException;
 import java.util.ArrayList;
 
 /**
- * The main interface class that transfers the training data to the SVM-light library by a native call. Optionally takes as input an individually modified set
- * of training parameters or an array of string parameters that exactly simulate the command line input parameters used by the SVM-light binaries. This class
- * can also be used for native classification calls.
- * 
+ * The main interface class that transfers the training data to the SVM-light library by a native call. Optionally takes as input an
+ * individually modified set of training parameters or an array of string parameters that exactly simulate the command line input parameters
+ * used by the SVM-light binaries. This class can also be used for native classification calls.
+ *
  * @author Tom Crecelius & Martin Theobald, including a bug fix by George Shaw (MIT)
  */
 public class SVMLightInterface {
 
-	/**
-   * Apply an in-place quicksort prior to each native training call to SVM-light. SVM-light requires each input feature vector to be sorted in ascending order
-   * of dimensions. Disable this option if you are sure to provide sorted vectors already.
-	 */
-	public static boolean SORT_INPUT_VECTORS = true;
-	static {
-		System.loadLibrary("svmlight");
-	}
+    /**
+	 * Apply an in-place quicksort prior to each native training call to SVM-light. SVM-light requires each input feature vector to be
+     * sorted in ascending order of dimensions. Disable this option if you are sure to provide sorted vectors already.
+     */
+    public static boolean SORT_INPUT_VECTORS = true;
 
-	/**
-   * Reads a set of labeled training vectors from a URL. The format is compatible to the SVM-light training files.
-	 */
-	public static LabeledFeatureVector[] getLabeledFeatureVectorsFromURL(URL file,
-			int numOfLinesToSkip) throws ParseException {
+    static {
+        System.loadLibrary("svmlight");
+    }
 
-    ArrayList<LabeledFeatureVector> data = new ArrayList<LabeledFeatureVector>();
-		LabeledFeatureVector[] traindata = null;
-		BufferedReader bi = null;
+    /**
+     * Reads a set of labeled training vectors from a URL. The format is compatible to the SVM-light training files.
+     */
+    public static LabeledFeatureVector[] getLabeledFeatureVectorsFromURL(URL file, int numOfLinesToSkip) throws ParseException {
 
-		try {
+        ArrayList<LabeledFeatureVector> data = new ArrayList<LabeledFeatureVector>();
+        LabeledFeatureVector[] traindata = null;
+        BufferedReader bi = null;
 
-			bi = new BufferedReader(new InputStreamReader(file.openStream()));
+        try {
 
-			String line = null;
-			int cnt = 0;
-			while ((line = bi.readLine()) != null) {
+            bi = new BufferedReader(new InputStreamReader(file.openStream()));
 
-				if (line.startsWith("#")) {
+            String line = null;
+            int cnt = 0;
+            while ((line = bi.readLine()) != null) {
 
-					continue;
-				}
-				cnt++;
-				if (cnt <= numOfLinesToSkip) {
-					continue;
-				}
-				String label = null;
-				String tokens[] = line.trim().split("[ \\t\\n\\x0B\\f\\r\\[\\]]");
-				int qid = 0;
-				if (tokens.length > 2) {
+                if (line.startsWith("#")) {
 
-					label = tokens[0];
-					String factor = "";
-					if (tokens[1].startsWith("qid")) {
-						qid = Integer.parseInt(tokens[1].substring(tokens[1].indexOf(":") + 1,
-								tokens[1].length()));
-						factor = "1.0"; // TODO: a hack. find proper support for reading factors
-					} else {
-						factor = tokens[1].substring(0, tokens[1].length() - 1);
-					}
+                    continue;
+                }
+                cnt++;
+                if (cnt <= numOfLinesToSkip) {
+                    continue;
+                }
+                String label = null;
+                String tokens[] = line.trim().split("[ \\t\\n\\x0B\\f\\r\\[\\]]");
+                int qid = 0;
+                if (tokens.length > 2) {
 
-					ArrayList dimlist = new ArrayList();
-					ArrayList vallist = new ArrayList();
-					for (int tokencnt = 2; tokencnt < tokens.length; tokencnt++) {
-						String dimval = tokens[tokencnt];
-						if (dimval.trim().startsWith("#")) {
-							break;
-						}
+                    label = tokens[0];
+                    String factor = "";
+                    if (tokens[1].startsWith("qid")) {
+                        qid = Integer.parseInt(tokens[1].substring(tokens[1].indexOf(":") + 1, tokens[1].length()));
+                        factor = "1.0"; // TODO: a hack. find proper support for reading factors
+                    } else {
+                        factor = tokens[1].substring(0, tokens[1].length() - 1);
+                    }
 
-						int idx = dimval.indexOf(':');
-						if (idx >= 0) {
-							String dim = dimval.substring(0, idx);
-							String val = dimval.substring(idx + 1, dimval.length());
-							dimlist.add(dim);
-							vallist.add(val);
-						} else {
-              throw new ParseException("Parse error in FeatureVector of file '" + file.toString() + "' at line: " + cnt + ", token: " + tokencnt
-                  + ". Could not estimate a \"int:double\" pair ?! " + file.toString() + " contains a wrongly defined feature vector!", 0);
-						}
-					}
-					if (dimlist.size() > 0) {
-						double labelvalue = new Double(label).doubleValue();
-						double factorValue = new Double(factor).doubleValue();
-						int[] dimarray = new int[dimlist.size()];
-						double[] valarray = new double[vallist.size()];
-						for (int i = 0; i < dimlist.size(); i++) {
-							dimarray[i] = new Integer((String) dimlist.get(i)).intValue();
-						}
-						for (int i = 0; i < vallist.size(); i++) {
-							valarray[i] = new Double((String) vallist.get(i)).doubleValue();
-						}
-						LabeledFeatureVector lfv = new LabeledFeatureVector(labelvalue, dimarray,
-								valarray);
-						lfv.setFactor(factorValue);
-						lfv.setQid(qid);
-						data.add(lfv);
-					}
-				} else {
-					throw new ParseException("Parse error in FeatureVector of file '"
-							+ file.toString() + "' at line: " + cnt + ". "
-							+ " Wrong format of the labeled feature vector?", 0);
-				}
-			}
-			if (data.size() > 0) {
-				traindata = new LabeledFeatureVector[data.size()];
-				for (int i = 0; i < data.size(); i++) {
-					traindata[i] = (LabeledFeatureVector) data.get(i);
-				}
-			} else {
-				throw new ParseException("No labeled features found within " + cnt
-						+ "lines of file '" + file.toString() + "'.", 0);
-			}
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		} finally {
-			if (bi != null) {
-				try {
-					bi.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		return traindata;
-	}
+                    ArrayList dimlist = new ArrayList();
+                    ArrayList vallist = new ArrayList();
+                    for (int tokencnt = 2; tokencnt < tokens.length; tokencnt++) {
+                        String dimval = tokens[tokencnt];
+                        if (dimval.trim().startsWith("#")) {
+                            break;
+                        }
 
-	protected TrainingParameters m_tp;
+                        int idx = dimval.indexOf(':');
+                        if (idx >= 0) {
+                            String dim = dimval.substring(0, idx);
+                            String val = dimval.substring(idx + 1, dimval.length());
+                            dimlist.add(dim);
+                            vallist.add(val);
+                        } else {
+                            throw new ParseException(
+                                    "Parse error in FeatureVector of file '" + file.toString() + "' at line: " + cnt + ", token: " +
+                                            tokencnt + ". Could not estimate a \"int:double\" pair ?! " + file.toString() +
+                                            " contains a wrongly defined feature vector!", 0);
+                        }
+                    }
+                    if (dimlist.size() > 0) {
+                        double labelvalue = new Double(label).doubleValue();
+                        double factorValue = new Double(factor).doubleValue();
+                        int[] dimarray = new int[dimlist.size()];
+                        double[] valarray = new double[vallist.size()];
+                        for (int i = 0; i < dimlist.size(); i++) {
+                            dimarray[i] = new Integer((String) dimlist.get(i)).intValue();
+                        }
+                        for (int i = 0; i < vallist.size(); i++) {
+                            valarray[i] = new Double((String) vallist.get(i)).doubleValue();
+                        }
+                        LabeledFeatureVector lfv = new LabeledFeatureVector(labelvalue, dimarray, valarray);
+                        lfv.setFactor(factorValue);
+                        lfv.setQid(qid);
+                        data.add(lfv);
+                    }
+                } else {
+                    throw new ParseException("Parse error in FeatureVector of file '" + file.toString() + "' at line: " + cnt + ". " +
+                            " Wrong format of the labeled feature vector?", 0);
+                }
+            }
+            if (data.size() > 0) {
+                traindata = new LabeledFeatureVector[data.size()];
+                for (int i = 0; i < data.size(); i++) {
+                    traindata[i] = (LabeledFeatureVector) data.get(i);
+                }
+            } else {
+                throw new ParseException("No labeled features found within " + cnt + "lines of file '" + file.toString() + "'.", 0);
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        } finally {
+            if (bi != null) {
+                try {
+                    bi.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return traindata;
+    }
 
-	/**
-   * Performs a classification step as a native call to SVM-light. If this method is used exclusively, no additional SVMLightModel object has to be kept in the
-   * Java runtime process.
-	 */
-	public native double classifyNative(FeatureVector doc);
+    protected TrainingParameters m_tp;
 
-	public TrainingParameters getTrainingParameters() {
-    return m_tp;
-	}
+    /**
+     * Performs a classification step as a native call to SVM-light. If this method is used exclusively, no additional SVMLightModel object
+     * has to be kept in the Java runtime process.
+     */
+    public native double classifyNative(FeatureVector doc);
 
-	private void quicksort(int[] dims, double[] vals, int low, int high) {
-    if (low >= high)
+    public TrainingParameters getTrainingParameters() {
+        return m_tp;
+    }
+
+    private void quicksort(int[] dims, double[] vals, int low, int high) {
+		if (low >= high) {
 			return;
-
-    int leftIdx = low;
-    int pivot = low;
-    int rightIdx = high;
-    pivot = (low + high) / 2;
-    while (leftIdx <= pivot && rightIdx >= pivot) {
-      while (dims[leftIdx] < dims[pivot] && leftIdx <= pivot)
-        leftIdx++;
-      while (dims[rightIdx] > dims[pivot] && rightIdx >= pivot)
-        rightIdx--;
-      int tmp = dims[leftIdx];
-      dims[leftIdx] = dims[rightIdx];
-      dims[rightIdx] = tmp;
-      double tmpd = vals[leftIdx];
-      vals[leftIdx] = vals[rightIdx];
-      vals[rightIdx] = tmpd;
-      leftIdx++;
-      rightIdx--;
-      if (leftIdx - 1 == pivot)
-        pivot = rightIdx = rightIdx + 1;
-      else if (rightIdx + 1 == pivot)
-        pivot = leftIdx = leftIdx - 1;
-      quicksort(dims, vals, low, pivot - 1);
-      quicksort(dims, vals, pivot + 1, high);
 		}
-	}
 
-  private void sort(FeatureVector[] trainingData) {
-		for (int i = 0; i < trainingData.length; i++) {
-			if (trainingData[i] != null) {
-        quicksort(trainingData[i].m_dims, trainingData[i].m_vals, 0, trainingData[i].size() - 1);
-        // verifyIsSorted(trainingData[i].m_dims);
+        int leftIdx = low;
+        int pivot = low;
+        int rightIdx = high;
+        pivot = (low + high) / 2;
+        while (leftIdx <= pivot && rightIdx >= pivot) {
+			while (dims[leftIdx] < dims[pivot] && leftIdx <= pivot) {
+				leftIdx++;
 			}
-		}
-	}
+			while (dims[rightIdx] > dims[pivot] && rightIdx >= pivot) {
+				rightIdx--;
+			}
+            int tmp = dims[leftIdx];
+            dims[leftIdx] = dims[rightIdx];
+            dims[rightIdx] = tmp;
+            double tmpd = vals[leftIdx];
+            vals[leftIdx] = vals[rightIdx];
+            vals[rightIdx] = tmpd;
+            leftIdx++;
+            rightIdx--;
+			if (leftIdx - 1 == pivot) {
+				pivot = rightIdx = rightIdx + 1;
+			} else if (rightIdx + 1 == pivot) {
+				pivot = leftIdx = leftIdx - 1;
+			}
+            quicksort(dims, vals, low, pivot - 1);
+            quicksort(dims, vals, pivot + 1, high);
+        }
+    }
 
-	private native SVMLightModel trainmodel(LabeledFeatureVector[] traindata, TrainingParameters p);
+    private void sort(FeatureVector[] trainingData) {
+        for (int i = 0; i < trainingData.length; i++) {
+            if (trainingData[i] != null) {
+                quicksort(trainingData[i].m_dims, trainingData[i].m_vals, 0, trainingData[i].size() - 1);
+                // verifyIsSorted(trainingData[i].m_dims);
+            }
+        }
+    }
 
-	public SVMLightModel trainModel(LabeledFeatureVector[] trainingData) {
-		this.m_tp = new TrainingParameters();
-		return this.trainmodel(trainingData, this.m_tp);
-	}
+    private native SVMLightModel trainmodel(LabeledFeatureVector[] traindata, TrainingParameters p);
 
-	public SVMLightModel trainModel(LabeledFeatureVector[] trainingData, String[] argv) {
-		this.m_tp = new TrainingParameters(argv);
-		return this.trainmodel(trainingData, this.m_tp);
-	}
+    public SVMLightModel trainModel(LabeledFeatureVector[] trainingData) {
+        this.m_tp = new TrainingParameters();
+        return this.trainmodel(trainingData, this.m_tp);
+    }
 
-	public SVMLightModel trainModel(LabeledFeatureVector[] trainingData, TrainingParameters tp) {
-		this.m_tp = tp;
-		if (SORT_INPUT_VECTORS) {
-      sort(trainingData);
-		}
-    return trainmodel(trainingData, m_tp);
-	}
+    public SVMLightModel trainModel(LabeledFeatureVector[] trainingData, String[] argv) {
+        this.m_tp = new TrainingParameters(argv);
+        return this.trainmodel(trainingData, this.m_tp);
+    }
+
+    public SVMLightModel trainModel(LabeledFeatureVector[] trainingData, TrainingParameters tp) {
+        this.m_tp = tp;
+        if (SORT_INPUT_VECTORS) {
+            sort(trainingData);
+        }
+        return trainmodel(trainingData, m_tp);
+    }
 
 }

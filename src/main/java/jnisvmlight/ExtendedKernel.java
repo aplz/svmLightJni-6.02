@@ -23,41 +23,40 @@ package jnisvmlight;
 
 /**
  * Abstract class for an extended kernel.
- * 
+ *
  * @author Tom Crecelius & Martin Theobald
  */
 public abstract class ExtendedKernel extends Kernel {
 
-  protected double m_a;
+    protected double m_a;
 
-  protected double m_c;
+    protected double m_c;
 
-  protected ExtendedKernel() {
-    super();
-    this.m_a = 1.0;
-    this.m_c = 0.0;
-  }
+    protected ExtendedKernel() {
+        super();
+        this.m_a = 1.0;
+        this.m_c = 0.0;
+    }
 
-  protected ExtendedKernel(Kernel nestedKernel, double multiplier,
-      double constant) {
-    super(nestedKernel);
-    this.m_a = multiplier;
-    this.m_c = constant;
-  }
+    protected ExtendedKernel(Kernel nestedKernel, double multiplier, double constant) {
+        super(nestedKernel);
+        this.m_a = multiplier;
+        this.m_c = constant;
+    }
 
-  public double getConstant() {
-    return m_c;
-  }
+    public double getConstant() {
+        return m_c;
+    }
 
-  public double getMultiplier() {
-    return m_a;
-  }
+    public double getMultiplier() {
+        return m_a;
+    }
 
-  public void setConstant(double c) {
-    this.m_c = c;
-  }
+    public void setConstant(double c) {
+        this.m_c = c;
+    }
 
-  public void setMultiplier(double m) {
-    this.m_a = m;
-  }
+    public void setMultiplier(double m) {
+        this.m_a = m;
+    }
 }

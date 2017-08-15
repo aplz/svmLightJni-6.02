@@ -23,53 +23,52 @@ package jnisvmlight;
 
 /**
  * A labeled feature vector.
- * 
+ *
  * @author Tom Crecelius & Martin Theobald
  */
-public class LabeledFeatureVector extends FeatureVector implements
-    java.io.Serializable {
+public class LabeledFeatureVector extends FeatureVector implements java.io.Serializable {
 
-  protected double m_label;
+    protected double m_label;
 
-	protected int m_qid;
+    protected int m_qid;
 
-	protected LabeledFeatureVector() {
-		this(0, null, null);
-	}
+    protected LabeledFeatureVector() {
+        this(0, null, null);
+    }
 
-  public LabeledFeatureVector(double label, int size) {
-    super(size);
-    this.m_label = label;
-  }
+    public LabeledFeatureVector(double label, int size) {
+        super(size);
+        this.m_label = label;
+    }
 
-  public LabeledFeatureVector(double label, int[] dims, double[] vals) {
-    super(dims, vals);
-    this.m_label = label;
-  }
+    public LabeledFeatureVector(double label, int[] dims, double[] vals) {
+        super(dims, vals);
+        this.m_label = label;
+    }
 
-  public double getLabel() {
-    return m_label;
-  }
+    public double getLabel() {
+        return m_label;
+    }
 
-  public void setFeatures(double label, int[] dims, double[] vals) {
-    this.m_label = label;
-    setFeatures(dims, vals);
-  }
+    public void setFeatures(double label, int[] dims, double[] vals) {
+        this.m_label = label;
+        setFeatures(dims, vals);
+    }
 
-  public void setLabel(double label) {
-    this.m_label = label;
-  }
+    public void setLabel(double label) {
+        this.m_label = label;
+    }
 
-	@Override
-	public String toString() {
-		return (m_label*m_factor) + " " + super.toString() + "\n";
-	}
+    @Override
+    public String toString() {
+        return (m_label * m_factor) + " " + super.toString() + "\n";
+    }
 
-	public int getQid() {
-		return this.m_qid;
-	}
+    public int getQid() {
+        return this.m_qid;
+    }
 
-	public void setQid(int m_qid) {
-		this.m_qid = m_qid;
-	}
+    public void setQid(int m_qid) {
+        this.m_qid = m_qid;
+    }
 }
