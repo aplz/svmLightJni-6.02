@@ -51,7 +51,9 @@ public class SVMLightInterface implements Serializable {
     public static boolean SORT_INPUT_VECTORS = true;
 
     static {
-        System.load(System.getProperty("user.dir") + "/src/main/resources/svmlight-64.dll");
+        // TODO: this not good practice. Either the client code should issue this statement accordingly or
+        // the path must be set more elegantly.
+        System.load(System.getProperty("user.dir") + "/lib/svmlight-64.dll");
     }
 
     /**
