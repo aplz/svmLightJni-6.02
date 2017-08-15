@@ -23,35 +23,35 @@ package jnisvmlight;
 
 /**
  * A radial base kernel.
- * 
+ *
  * @author Tom Crecelius & Martin Theobald
  */
 public class RadialBaseKernel extends Kernel {
 
-  private double m_width;
+    private double m_width;
 
-  protected RadialBaseKernel() {
-    this(new LinearKernel(), 1.0);
-  }
+    protected RadialBaseKernel() {
+        this(new LinearKernel(), 1.0);
+    }
 
-  public RadialBaseKernel(Kernel nestedKernel, double width) {
-    super(nestedKernel);
-    this.m_width = width;
-  }
+    public RadialBaseKernel(Kernel nestedKernel, double width) {
+        super(nestedKernel);
+        this.m_width = width;
+    }
 
-  public double evaluate(FeatureVector v1, FeatureVector v2) {
-    return Math.exp(-m_width * (m_kernel.evaluate(v1, v1) - (2 * m_kernel.evaluate(v1, v2)) + m_kernel.evaluate(v2, v2))); 
-  }
+    public double evaluate(FeatureVector v1, FeatureVector v2) {
+        return Math.exp(-m_width * (m_kernel.evaluate(v1, v1) - (2 * m_kernel.evaluate(v1, v2)) + m_kernel.evaluate(v2, v2)));
+    }
 
-  public double getWidth() {
-    return m_width;
-  }
+    public double getWidth() {
+        return m_width;
+    }
 
-  public void setWidth(double width) {
-    this.m_width = width;
-  }
+    public void setWidth(double width) {
+        this.m_width = width;
+    }
 
-  public String toString() {
-    return "Radial base kernel K(x, y, k) = exp(-" + m_width + " k(x,x) -2 k(x,y) + k(y,y)); k = " + m_kernel.toString();
-  }
+    public String toString() {
+        return "Radial base kernel K(x, y, k) = exp(-" + m_width + " k(x,x) -2 k(x,y) + k(y,y)); k = " + m_kernel.toString();
+    }
 }
