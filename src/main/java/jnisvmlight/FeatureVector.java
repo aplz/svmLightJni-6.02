@@ -21,37 +21,47 @@
 
 package jnisvmlight;
 
+import java.util.stream.DoubleStream;
+
 /**
  * A feature vector. Features are dimension-value pairs. This class implements a simple dictionary data structure to map dimensions onto
  * their values. Note that for convenience, features do not have be sorted according to their dimensions at this point. The SVMLightTrainer
  * class has an option for sorting input vectors prior to training.
  *
  * @author Tom Crecelius & Martin Theobald
+ * @author Anja Pilz
  */
 public class FeatureVector implements java.io.Serializable {
 
     protected int[] m_dims;
-
     protected double m_factor;
-
     protected double[] m_vals;
 
-    public FeatureVector(double factor, int[] dims, double[] vals) {
+    /**
+     * Instantiate a feature vector with a given {@code factor}, {@code dimensions} and {@code values}.
+     *
+     * @param factor     the feature vectors factor.
+     * @param dimensions the feature dimensions.
+     * @param values     the feature values.
+     */
+    public FeatureVector(double factor, int[] dimensions, double[] values) {
         this.m_factor = factor;
-        this.m_dims = dims;
-        this.m_vals = vals;
+        this.m_dims = dimensions;
+        this.m_vals = values;
     }
 
     public FeatureVector(int size) {
-        this.m_factor = 1.0;
-        this.m_dims = new int[size];
-        this.m_vals = new double[size];
+        this(1.0, new int[size], new double[size]);
     }
 
-    public FeatureVector(int[] dims, double[] vals) {
-        this.m_factor = 1.0;
-        this.m_dims = dims;
-        this.m_vals = vals;
+    /**
+     * Instantiate a feature vector with given {@code dimensions} and {@code values} and a default {@link #m_factor} of 1.0.
+     *
+     * @param dimensions the feature dimensions.
+     * @param values     the feature values.
+     */
+    public FeatureVector(int[] dimensions, double[] values) {
+        this(1.0, dimensions, values);
     }
 
     /**
@@ -82,11 +92,7 @@ public class FeatureVector implements java.io.Serializable {
      * Returns the linear norm factor of this vector's values (i.e., the sum of it's values).
      */
     public double getL1Norm() {
-        double sum = 0.0;
-        for (int i = 0; i < m_vals.length; i++) {
-            sum += m_vals[i];
-        }
-        return sum;
+        return DoubleStream.of(m_vals).sum();
     }
 
     /**
@@ -136,9 +142,9 @@ public class FeatureVector implements java.io.Serializable {
         this.m_factor = factor;
     }
 
-    public void setFeatures(int[] dims, double[] vals) {
-        this.m_dims = dims;
-        this.m_vals = vals;
+    public void setFeatures(int[] dimensions, double[] values) {
+        this.m_dims = dimensions;
+        this.m_vals = values;
     }
 
     public int size() {
