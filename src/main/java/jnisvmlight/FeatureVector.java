@@ -40,7 +40,7 @@ public class FeatureVector implements java.io.Serializable {
     /**
      * Instantiate a feature vector with a given {@code factor}, {@code dimensions} and {@code values}.
      *
-     * @param factor     the feature vectors factor.
+     * @param factor     the feature vector's factor.
      * @param dimensions the feature dimensions.
      * @param values     the feature values.
      */
