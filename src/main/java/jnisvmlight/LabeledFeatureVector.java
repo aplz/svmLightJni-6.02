@@ -25,38 +25,32 @@ package jnisvmlight;
  * A labeled feature vector.
  *
  * @author Tom Crecelius & Martin Theobald
+ * @author Anja Pilz
  */
 public class LabeledFeatureVector extends FeatureVector implements java.io.Serializable {
 
     protected double m_label;
-
     protected int m_qid;
 
-    protected LabeledFeatureVector() {
-        this(0, null, null);
-    }
-
-    public LabeledFeatureVector(double label, int size) {
-        super(size);
+    /**
+     * Instantiate a labeled feature vector with the given {@code label}, {@code dimensions} and {@code values}.
+     *
+     * @param label      the feature vector's label.
+     * @param dimensions the feature dimensions.
+     * @param values     the feature values.
+     */
+    public LabeledFeatureVector(double label, int[] dimensions, double[] values) {
+        super(dimensions, values);
         this.m_label = label;
     }
 
-    public LabeledFeatureVector(double label, int[] dims, double[] vals) {
-        super(dims, vals);
-        this.m_label = label;
-    }
-
+    /**
+     * Returns the feature vector's label.
+     *
+     * @return the feature vector's label.
+     */
     public double getLabel() {
         return m_label;
-    }
-
-    public void setFeatures(double label, int[] dims, double[] vals) {
-        this.m_label = label;
-        setFeatures(dims, vals);
-    }
-
-    public void setLabel(double label) {
-        this.m_label = label;
     }
 
     @Override
@@ -64,11 +58,21 @@ public class LabeledFeatureVector extends FeatureVector implements java.io.Seria
         return (m_label * m_factor) + " " + super.toString() + "\n";
     }
 
-    public int getQid() {
+    /**
+     * Returns the feature vector's query ID.
+     *
+     * @return the feature vector's query ID.
+     */
+    public int getQueryId() {
         return this.m_qid;
     }
 
-    public void setQid(int m_qid) {
+    /**
+     * Set the feature vector's query ID.
+     *
+     * @param m_qid the query ID to set.
+     */
+    public void setQueryId(int m_qid) {
         this.m_qid = m_qid;
     }
 }

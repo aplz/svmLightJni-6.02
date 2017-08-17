@@ -128,7 +128,7 @@ public class SVMLightInterface implements Serializable {
                         double[] values = valuesList.stream().mapToDouble(Double::parseDouble).toArray();
                         LabeledFeatureVector labeledFeatureVector = new LabeledFeatureVector(labelValue, dimensions, values);
                         labeledFeatureVector.setFactor(factorValue);
-                        labeledFeatureVector.setQid(queryId);
+                        labeledFeatureVector.setQueryId(queryId);
                         data.add(labeledFeatureVector);
                     }
                 } else {
