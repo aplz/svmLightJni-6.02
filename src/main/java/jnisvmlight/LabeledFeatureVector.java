@@ -60,11 +60,6 @@ public class LabeledFeatureVector extends FeatureVector implements java.io.Seria
         return m_label;
     }
 
-    @Override
-    public String toString() {
-        return (m_label * m_factor) + " " + super.toString() + "\n";
-    }
-
     /**
      * Returns the feature vector's query ID.
      *
@@ -82,4 +77,10 @@ public class LabeledFeatureVector extends FeatureVector implements java.io.Seria
     public void setQueryId(int m_qid) {
         this.m_qid = m_qid;
     }
+
+    @Override
+    public String toString() {
+        return (m_label * m_factor) + " " + super.toString() + "\n";
+    }
+
 }
