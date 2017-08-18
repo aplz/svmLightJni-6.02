@@ -32,7 +32,7 @@ import java.text.ParseException;
  * @author Tom Crecelius & Martin Theobald
  * @author Anja Pilz
  */
-public class SVMLightModel implements Serializable {
+public class SVMLightModel {
 
     /**
      * Reads an SVM-light model from a URL and creates an SVMLightModel object in Java. The format is compatible to the SVM-light model
@@ -114,7 +114,7 @@ public class SVMLightModel implements Serializable {
                             "'. Not an svmlight-model file ?!", 0);
         }
 
-		lfv = SVMLightInterface.fromPath(Paths.get(file.toString()), linecnt);
+        lfv = SVMLightInterface.fromPath(Paths.get(file.toString()), linecnt);
 
         SVMLightModel model =
                 new SVMLightModel(format, kType, dParam, gParam, sParam, rParam, uParam, highFeatIdx, trainDocs, numSupVecs, threshold,

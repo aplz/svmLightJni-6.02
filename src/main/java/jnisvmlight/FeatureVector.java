@@ -36,7 +36,7 @@ import java.util.stream.IntStream;
  * @author Tom Crecelius & Martin Theobald
  * @author Anja Pilz
  */
-public class FeatureVector implements java.io.Serializable {
+public class FeatureVector {
     // field names must not be changed!
     protected int[] m_dims;
     protected double m_factor;

@@ -27,7 +27,7 @@ package jnisvmlight;
  * @author Tom Crecelius & Martin Theobald
  * @author Anja Pilz
  */
-public class LabeledFeatureVector extends FeatureVector implements java.io.Serializable {
+public class LabeledFeatureVector extends FeatureVector {
 
     protected double m_label;
     protected int m_qid;

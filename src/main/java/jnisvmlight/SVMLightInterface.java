@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
@@ -39,13 +38,12 @@ import java.util.List;
  * used by the SVM-light binaries. This class can also be used for native classification calls.
  *
  * @author Tom Crecelius & Martin Theobald, including a bug fix by George Shaw (MIT)
-
  * @author Anja Pilz
  */
-public class SVMLightInterface implements Serializable {
+public class SVMLightInterface {
     private static final Logger LOGGER = LoggerFactory.getLogger(SVMLightInterface.class);
     /**
-	 * Apply an in-place quicksort prior to each native training call to SVM-light. SVM-light requires each input feature vector to be
+     * Apply an in-place quicksort prior to each native training call to SVM-light. SVM-light requires each input feature vector to be
      * sorted in ascending order of dimensions. Disable this option if you are sure to provide sorted vectors already.
      */
     public static boolean SORT_INPUT_VECTORS = true;
@@ -61,9 +59,7 @@ public class SVMLightInterface implements Serializable {
      *
      * @param file
      * @param numOfLinesToSkip
-     *
      * @return
-     *
      * @throws ParseException
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -115,10 +111,10 @@ public class SVMLightInterface implements Serializable {
                             dimensionsList.add(dimensionValue.substring(0, idx));
                             valuesList.add(dimensionValue.substring(idx + 1, dimensionValue.length()));
                         } else {
-                            throw new ParseException("Parse error in FeatureVector of file '" + file.toString()
-                                    + "' at line: " + cnt + ", token: " + tokenCounter
-                                    + ". Could not estimate a \"int:double\" pair ?! " + file.toString()
-                                    + " contains a wrongly defined feature vector!", 0);
+                            throw new ParseException(
+                                    "Parse error in FeatureVector of file '" + file.toString() + "' at line: " + cnt + ", token: " +
+                                            tokenCounter + ". Could not estimate a \"int:double\" pair ?! " + file.toString() +
+                                            " contains a wrongly defined feature vector!", 0);
                         }
                     }
                     if (dimensionsList.size() > 0) {
@@ -132,8 +128,8 @@ public class SVMLightInterface implements Serializable {
                         data.add(labeledFeatureVector);
                     }
                 } else {
-                    throw new ParseException("Parse error in FeatureVector of file '" + file.toString() + "' at line: "
-                            + cnt + ". " + " Wrong format of the labeled feature vector?", 0);
+                    throw new ParseException("Parse error in FeatureVector of file '" + file.toString() + "' at line: " + cnt + ". " +
+                            " Wrong format of the labeled feature vector?", 0);
                 }
             }
             if (data.size() > 0) {
@@ -143,8 +139,7 @@ public class SVMLightInterface implements Serializable {
                     trainingData[i] = (LabeledFeatureVector) data.get(i);
                 }
             } else {
-                throw new ParseException("No labeled features found within " + cnt + "lines of file '"
-                        + file.toString() + "'.", 0);
+                throw new ParseException("No labeled features found within " + cnt + "lines of file '" + file.toString() + "'.", 0);
             }
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
@@ -168,21 +163,21 @@ public class SVMLightInterface implements Serializable {
     }
 
     private void quicksort(int[] dims, double[] vals, int low, int high) {
-		if (low >= high) {
-			return;
-		}
+        if (low >= high) {
+            return;
+        }
 
         int leftIdx = low;
         int pivot = low;
         int rightIdx = high;
         pivot = (low + high) / 2;
         while (leftIdx <= pivot && rightIdx >= pivot) {
-			while (dims[leftIdx] < dims[pivot] && leftIdx <= pivot) {
-				leftIdx++;
-			}
-			while (dims[rightIdx] > dims[pivot] && rightIdx >= pivot) {
-				rightIdx--;
-			}
+            while (dims[leftIdx] < dims[pivot] && leftIdx <= pivot) {
+                leftIdx++;
+            }
+            while (dims[rightIdx] > dims[pivot] && rightIdx >= pivot) {
+                rightIdx--;
+            }
             int tmp = dims[leftIdx];
             dims[leftIdx] = dims[rightIdx];
             dims[rightIdx] = tmp;
@@ -191,11 +186,11 @@ public class SVMLightInterface implements Serializable {
             vals[rightIdx] = tmpd;
             leftIdx++;
             rightIdx--;
-			if (leftIdx - 1 == pivot) {
-				pivot = rightIdx = rightIdx + 1;
-			} else if (rightIdx + 1 == pivot) {
-				pivot = leftIdx = leftIdx - 1;
-			}
+            if (leftIdx - 1 == pivot) {
+                pivot = rightIdx = rightIdx + 1;
+            } else if (rightIdx + 1 == pivot) {
+                pivot = leftIdx = leftIdx - 1;
+            }
             quicksort(dims, vals, low, pivot - 1);
             quicksort(dims, vals, pivot + 1, high);
         }
@@ -204,7 +199,7 @@ public class SVMLightInterface implements Serializable {
     private void sort(FeatureVector[] trainingData) {
         for (int i = 0; i < trainingData.length; i++) {
             if (trainingData[i] != null) {
-                quicksort(trainingData[i].m_dims, trainingData[i].m_vals, 0, trainingData[i].size() - 1);
+                quicksort(trainingData[i].m_dims, trainingData[i].m_vals, 0, trainingData[i].m_dims.length - 1);
                 // verifyIsSorted(trainingData[i].m_dims);
             }
         }

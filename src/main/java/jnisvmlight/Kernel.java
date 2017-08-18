@@ -21,14 +21,12 @@
 
 package jnisvmlight;
 
-import java.io.Serializable;
-
 /**
  * Abstract kernel class.
  *
  * @author Tom Crecelius & Martin Theobald
  */
-public abstract class Kernel implements Serializable {
+public abstract class Kernel {
 
     protected Kernel m_kernel;
 
