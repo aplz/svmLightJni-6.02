@@ -219,8 +219,8 @@ public class LearnParam {
     public LearnParam() {
         this.verbosity = 0;
         this.type = CLASSIFICATION;
-        this.predfile = new String("trans_predictions");
-        this.alphafile = new String("");
+        this.predfile = "trans_predictions";
+        this.alphafile = "";
         this.biased_hyperplane = 1;
         this.sharedslack = 0;
         this.remove_inconsistent = 0;
