@@ -158,15 +158,6 @@ public class FeatureVector implements java.io.Serializable {
         }
     }
 
-    /**
-     * Returns the number of features in this vector, i.e. the number of set dimensions.
-     *
-     * @return the number of features in this vector.
-     */
-    public int size() {
-        return m_dims.length;
-    }
-
     @Override
     public String toString() {
         String s = "";
