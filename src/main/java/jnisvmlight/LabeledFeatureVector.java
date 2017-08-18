@@ -32,9 +32,11 @@ public class LabeledFeatureVector extends FeatureVector implements java.io.Seria
     protected double m_label;
     protected int m_qid;
 
-    // this constructor must not be deleted
-    protected LabeledFeatureVector() {
-        this(0, null, null);
+    /**
+     * This constructor must not be deleted. It is required in the JNI at the GetMethodID step (lines 46 to 50 in svm_jni.c).
+     */
+    @SuppressWarnings("unused")
+    LabeledFeatureVector() {
     }
 
     /**
@@ -46,15 +48,6 @@ public class LabeledFeatureVector extends FeatureVector implements java.io.Seria
      */
     public LabeledFeatureVector(double label, int[] dimensions, double[] values) {
         super(dimensions, values);
-        this.m_label = label;
-    }
-
-    public void setFeatures(double label, int[] dims, double[] vals) {
-        this.m_label = label;
-        setFeatures(dims, vals);
-    }
-
-    public void setLabel(double label) {
         this.m_label = label;
     }
 

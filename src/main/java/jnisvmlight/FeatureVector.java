@@ -25,7 +25,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
@@ -69,6 +68,13 @@ public class FeatureVector implements java.io.Serializable {
     }
 
     /**
+     * This constructor must not be deleted. It is through {@link LabeledFeatureVector} required in the JNI at the GetMethodID step (lines
+     * 46 to 50 in svm_jni .c).
+     */
+    FeatureVector() {
+    }
+
+    /**
      * Returns the cosine similarity between two feature vectors.
      *
      * @param other the second feature vector.
@@ -79,10 +85,10 @@ public class FeatureVector implements java.io.Serializable {
         Map<Integer, Double> tempThis = Maps.newHashMap();
         // temporarily store the vector in a map so that we can more easily check for common dimensions
         for (int i = 0; i < m_dims.length; i++) {
-            tempThis.put(m_dims[i],m_vals[i]);
+            tempThis.put(m_dims[i], m_vals[i]);
         }
         for (int i = 0; i < other.m_dims.length; i++) {
-            if(tempThis.containsKey(other.m_dims[i])){
+            if (tempThis.containsKey(other.m_dims[i])) {
                 cosine += tempThis.get(other.m_dims[i]) * other.m_vals[i];
             }
         }
@@ -134,16 +140,10 @@ public class FeatureVector implements java.io.Serializable {
      * Performs a linear normalization to the value 1.
      */
     public void normalizeL1() {
-        normalizeL1(getL1Norm());
-    }
-
-    /**
-     * Performs a linear normalization to the given norm value.
-     */
-    public void normalizeL1(double norm) {
+        double l1Norm = getL1Norm();
         for (int i = 0; i < m_vals.length; i++) {
             if (m_vals[i] > 0) {
-                m_vals[i] /= norm;
+                m_vals[i] /= l1Norm;
             }
         }
     }
