@@ -22,7 +22,10 @@
 package jnisvmlight;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
@@ -73,23 +76,17 @@ public class FeatureVector implements java.io.Serializable {
      */
     public double getCosine(FeatureVector other) {
         double cosine = 0.0;
-        int dim;
-        double q_i, d_i;
-        for (int i = 0; i < Math.min(this.size(), other.size()); i++) {
-            dim = other.getDimAt(i);
-            q_i = other.getValueAt(dim);
-            d_i = this.getValueAt(dim);
-            cosine += q_i * d_i;
+        Map<Integer, Double> tempThis = Maps.newHashMap();
+        // temporarily store the vector in a map so that we can more easily check for common dimensions
+        for (int i = 0; i < m_dims.length; i++) {
+            tempThis.put(m_dims[i],m_vals[i]);
+        }
+        for (int i = 0; i < other.m_dims.length; i++) {
+            if(tempThis.containsKey(other.m_dims[i])){
+                cosine += tempThis.get(other.m_dims[i]) * other.m_vals[i];
+            }
         }
         return cosine / (this.getL2Norm() * other.getL2Norm());
-    }
-
-    public int getDimAt(int index) {
-        return m_dims[index];
-    }
-
-    public double getValueAt(int index) {
-        return m_vals[index];
     }
 
     /**
