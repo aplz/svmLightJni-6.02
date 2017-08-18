@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -55,22 +54,22 @@ public class SVMLightInterface {
     }
 
     /**
-     * Reads a set of labeled training vectors from a URL. The format is compatible to the SVM-light training files.
+     * Reads a set of labeled training vectors from a path. The format is compatible to the SVM-light training files.
      *
-     * @param file
-     * @param numOfLinesToSkip
-     * @return
+     * @param path             the path to the file.
+     * @param numOfLinesToSkip the number of lines in the file that we should ignore.
+     * @return an array of {@link LabeledFeatureVector}.
      * @throws ParseException
+     * @throws IllegalArgumentException, thrown if a line does not match the expected format (e.g. contains less than two entries).
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public static LabeledFeatureVector[] fromPath(Path file, int numOfLinesToSkip) throws ParseException {
+    //@SuppressWarnings({"unchecked", "rawtypes"})
+    public static LabeledFeatureVector[] fromPath(Path path, int numOfLinesToSkip) throws ParseException {
 
-        LOGGER.info("Reading ... " + file);
-        ArrayList data = new ArrayList();
+        LOGGER.info("Reading from {}", path);
+        List<LabeledFeatureVector> data = Lists.newArrayList();
         LabeledFeatureVector[] trainingData = null;
-
         try {
-            List<String> lines = Files.readAllLines(file);
+            List<String> lines = Files.readAllLines(path);
             int cnt = 0;
             for (String line : lines) {
                 if (line.startsWith("#")) {
@@ -83,64 +82,56 @@ public class SVMLightInterface {
                 }
                 String tokens[] = line.trim().split("[ \\t\\n\\x0B\\f\\r\\[\\]]");
                 int queryId = 0;
-                if (tokens.length > 2) {
-                    String label = tokens[0];
-                    // System.out.println("Label: " + label);
-                    // TODO: was ist factor?
-                    String factor = "";
-                    if (tokens[1].startsWith("qid")) {
-                        queryId = Integer.parseInt(tokens[1].substring(tokens[1].indexOf(":") + 1, tokens[1].length()));
-                        // hack: factor is set to 1.0 when reading data like this
-                        // especially when reading the ranking svm training data, the parser does currently not support
-                        // factors
-                        factor = "1.0";
-                    } else {
-                        factor = tokens[1].substring(0, tokens[1].length() - 1);
-                    }
-
-                    List<String> dimensionsList = Lists.newArrayList();
-                    List<String> valuesList = Lists.newArrayList();
-                    for (int tokenCounter = 2; tokenCounter < tokens.length; tokenCounter++) {
-                        String dimensionValue = tokens[tokenCounter];
-                        if (dimensionValue.trim().startsWith("#")) {
-                            break;
-                        }
-
-                        int idx = dimensionValue.indexOf(':');
-                        if (idx >= 0) {
-                            dimensionsList.add(dimensionValue.substring(0, idx));
-                            valuesList.add(dimensionValue.substring(idx + 1, dimensionValue.length()));
-                        } else {
-                            throw new ParseException(
-                                    "Parse error in FeatureVector of file '" + file.toString() + "' at line: " + cnt + ", token: " +
-                                            tokenCounter + ". Could not estimate a \"int:double\" pair ?! " + file.toString() +
-                                            " contains a wrongly defined feature vector!", 0);
-                        }
-                    }
-                    if (dimensionsList.size() > 0) {
-                        double labelValue = Double.parseDouble(label);
-                        double factorValue = Double.parseDouble(factor);
-                        int[] dimensions = dimensionsList.stream().mapToInt(Integer::parseInt).toArray();
-                        double[] values = valuesList.stream().mapToDouble(Double::parseDouble).toArray();
-                        LabeledFeatureVector labeledFeatureVector = new LabeledFeatureVector(labelValue, dimensions, values);
-                        labeledFeatureVector.setFactor(factorValue);
-                        labeledFeatureVector.setQueryId(queryId);
-                        data.add(labeledFeatureVector);
-                    }
+                if (tokens.length < 2) {
+                    throw new IllegalArgumentException("Each line must contain a label and a feature");
+                }
+                String label = tokens[0];
+                String factor;
+                if (tokens[1].startsWith("qid")) {
+                    queryId = Integer.parseInt(tokens[1].substring(tokens[1].indexOf(":") + 1, tokens[1].length()));
+                    // TODO: hack: factor is set to 1.0 when reading data like this
+                    // Especially when reading the ranking svm training data, the parser does currently not support factors
+                    factor = "1.0";
                 } else {
-                    throw new ParseException("Parse error in FeatureVector of file '" + file.toString() + "' at line: " + cnt + ". " +
-                            " Wrong format of the labeled feature vector?", 0);
+                    factor = tokens[1].substring(0, tokens[1].length() - 1);
                 }
-            }
-            if (data.size() > 0) {
-                data.toArray(new LabeledFeatureVector[data.size()]);
-                trainingData = new LabeledFeatureVector[data.size()];
-                for (int i = 0; i < data.size(); i++) {
-                    trainingData[i] = (LabeledFeatureVector) data.get(i);
+
+                List<String> dimensionsList = Lists.newArrayList();
+                List<String> valuesList = Lists.newArrayList();
+                for (int tokenCounter = 2; tokenCounter < tokens.length; tokenCounter++) {
+                    String dimensionValue = tokens[tokenCounter];
+                    if (dimensionValue.trim().startsWith("#")) {
+                        // this could be a comment at the end of the line.
+                        break;
+                    }
+
+                    int idx = dimensionValue.indexOf(':');
+                    if (idx >= 0) {
+                        dimensionsList.add(dimensionValue.substring(0, idx));
+                        valuesList.add(dimensionValue.substring(idx + 1, dimensionValue.length()));
+                    } else {
+                        throw new ParseException(
+                                "Parse error in FeatureVector of file '" + path.toString() + "' at line: " + cnt + ", token: " +
+                                        tokenCounter + ". Could not estimate a \"int:double\" pair ?! " + path +
+                                        " contains a wrongly defined feature vector!", 0);
+                    }
                 }
-            } else {
-                throw new ParseException("No labeled features found within " + cnt + "lines of file '" + file.toString() + "'.", 0);
+                if (dimensionsList.size() > 0) {
+                    double labelValue = Double.parseDouble(label);
+                    double factorValue = Double.parseDouble(factor);
+                    int[] dimensions = dimensionsList.stream().mapToInt(Integer::parseInt).toArray();
+                    double[] values = valuesList.stream().mapToDouble(Double::parseDouble).toArray();
+                    LabeledFeatureVector labeledFeatureVector = new LabeledFeatureVector(labelValue, dimensions, values);
+                    labeledFeatureVector.setFactor(factorValue);
+                    labeledFeatureVector.setQueryId(queryId);
+                    data.add(labeledFeatureVector);
+                }
+
             }
+            if (data.size() == 0) {
+                throw new IllegalArgumentException("No labeled features found within " + cnt + " lines of file '" + path + "'.");
+            }
+            trainingData = data.toArray(new LabeledFeatureVector[data.size()]);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
