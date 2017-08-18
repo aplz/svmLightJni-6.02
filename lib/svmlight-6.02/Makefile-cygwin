@@ -7,14 +7,14 @@
 #
 
 # SET THIS TO YOUR JAVA HOME DIRECTORY
-JAVAHOME=/cygdrive/c/Program\ Files/Java/jdk1.7.0_15/
+JAVAHOME=/cygdrive/c/Program\ Files/Java/jdk1.8.0_66
 
 # CFLAGS=-g -Wall -pedantic  # debugging C-Compiler flags
-#CC=gcc                          # used C-compiler
-CC=~/mingw64/bin/x86_64-w64-mingw32-gcc
+#CC=~/mingw64/bin/x86_64-w64-mingw32-gcc # used C-compiler
+CC=x86_64-w64-mingw32-gcc
 CFLAGS=-O3 -Wall -I$(JAVAHOME)/include -I$(JAVAHOME)/include/win32                  # release C-Compiler flags
-LD=gcc                          # used linker
-LD=~/mingw64/bin/x86_64-w64-mingw32-gcc
+#LD=~/mingw64/bin/x86_64-w64-mingw32-gcc  # used linker
+LD=x86_64-w64-mingw32-gcc
 LFLAGS=-O3 -Wall -I$(JAVAHOME)/include -I$(JAVAHOME)/include/win32                  # linker flags
 LIBS=-L. -lm                    # used libraries
 
@@ -92,5 +92,4 @@ svm_shared_lib_MinGW: svm_classify.o svm_learn.o svm_learn_main.o svm_hideo.o sv
 	-Wl,--add-stdcall-alias \
 	-o svmlight-64.dll \
 	svm_learn.o svm_learn_main.o svm_hideo.o svm_common.o svm_jni.o
-	cp -vf svmlight-64.dll ../../lib/
 	echo "done."
