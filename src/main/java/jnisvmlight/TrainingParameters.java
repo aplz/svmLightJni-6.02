@@ -22,18 +22,21 @@
 package jnisvmlight;
 
 /**
- * The TrainingParameters object combines the KernelParm and LearnParam objects.
+ * The TrainingParameters object combines the KernelParam and LearnParam objects.
  *
  * @author Tom Crecelius & Martin Theobald
+ * @author Anja Pilz
  */
 public class TrainingParameters {
-
+    // field names must not be changed!
     private KernelParam m_kp;
-
     private LearnParam m_lp;
 
     /**
      * Initializes the training parameters with the default values for the kernel and the learning parameters.
+     *
+     * @see LearnParam
+     * @see KernelParam
      */
     public TrainingParameters() {
         this(new LearnParam(), new KernelParam());
@@ -41,6 +44,9 @@ public class TrainingParameters {
 
     /**
      * Initializes the training parameters with customized values for the kernel and the learning parameters.
+     *
+     * @param lp the learning parameters.
+     * @param kp the kernel parameters.
      */
     public TrainingParameters(LearnParam lp, KernelParam kp) {
         m_lp = lp;
