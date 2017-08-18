@@ -32,6 +32,11 @@ public class LabeledFeatureVector extends FeatureVector implements java.io.Seria
     protected double m_label;
     protected int m_qid;
 
+    // this constructor must not be deleted
+    protected LabeledFeatureVector() {
+        this(0, null, null);
+    }
+
     /**
      * Instantiate a labeled feature vector with the given {@code label}, {@code dimensions} and {@code values}.
      *
@@ -41,6 +46,15 @@ public class LabeledFeatureVector extends FeatureVector implements java.io.Seria
      */
     public LabeledFeatureVector(double label, int[] dimensions, double[] values) {
         super(dimensions, values);
+        this.m_label = label;
+    }
+
+    public void setFeatures(double label, int[] dims, double[] vals) {
+        this.m_label = label;
+        setFeatures(dims, vals);
+    }
+
+    public void setLabel(double label) {
         this.m_label = label;
     }
 
