@@ -21,7 +21,10 @@
 
 package jnisvmlight;
 
+import com.google.common.base.Preconditions;
+
 import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 
 /**
  * A feature vector. Features are dimension-value pairs. This class implements a simple dictionary data structure to map dimensions onto
@@ -32,7 +35,7 @@ import java.util.stream.DoubleStream;
  * @author Anja Pilz
  */
 public class FeatureVector implements java.io.Serializable {
-
+    // field names must not be changed!
     protected int[] m_dims;
     protected double m_factor;
     protected double[] m_vals;
@@ -45,13 +48,11 @@ public class FeatureVector implements java.io.Serializable {
      * @param values     the feature values.
      */
     public FeatureVector(double factor, int[] dimensions, double[] values) {
+        Preconditions.checkArgument(dimensions.length == values.length, "The number of dimensions and values must be the same!");
+        Preconditions.checkArgument(IntStream.of(dimensions).min().getAsInt() > 0, "Dimensions must start at 1!");
         this.m_factor = factor;
         this.m_dims = dimensions;
         this.m_vals = values;
-    }
-
-    public FeatureVector(int size) {
-        this(1.0, new int[size], new double[size]);
     }
 
     /**
@@ -66,30 +67,53 @@ public class FeatureVector implements java.io.Serializable {
 
     /**
      * Returns the cosine similarity between two feature vectors.
+     *
+     * @param other the second feature vector.
+     * @return the cosine similarity between two feature vectors.
      */
-    public double getCosine(FeatureVector v) {
+    public double getCosine(FeatureVector other) {
         double cosine = 0.0;
         int dim;
         double q_i, d_i;
-        for (int i = 0; i < Math.min(this.size(), v.size()); i++) {
-            dim = v.getDimAt(i);
-            q_i = v.getValueAt(dim);
+        for (int i = 0; i < Math.min(this.size(), other.size()); i++) {
+            dim = other.getDimAt(i);
+            q_i = other.getValueAt(dim);
             d_i = this.getValueAt(dim);
             cosine += q_i * d_i;
         }
-        return cosine / (this.getL2Norm() * v.getL2Norm());
+        return cosine / (this.getL2Norm() * other.getL2Norm());
     }
 
     public int getDimAt(int index) {
         return m_dims[index];
     }
 
+    public double getValueAt(int index) {
+        return m_vals[index];
+    }
+
+    /**
+     * Returns this vector's factor.
+     *
+     * @return this vector's factor.
+     */
     public double getFactor() {
         return m_factor;
     }
 
     /**
+     * Set this vector's factor.
+     *
+     * @param factor the factor to set.
+     */
+    public void setFactor(double factor) {
+        this.m_factor = factor;
+    }
+
+    /**
      * Returns the linear norm factor of this vector's values (i.e., the sum of it's values).
+     *
+     * @return the linear norm factor of this vector's values.
      */
     public double getL1Norm() {
         return DoubleStream.of(m_vals).sum();
@@ -97,6 +121,8 @@ public class FeatureVector implements java.io.Serializable {
 
     /**
      * Returns the L2 norm factor of this vector's values.
+     *
+     * @return the L2 norm factor of this vector's values.
      */
     public double getL2Norm() {
         double square_sum = 0.0;
@@ -106,9 +132,6 @@ public class FeatureVector implements java.io.Serializable {
         return Math.sqrt(square_sum);
     }
 
-    public double getValueAt(int index) {
-        return m_vals[index];
-    }
 
     /**
      * Performs a linear normalization to the value 1.
@@ -138,19 +161,16 @@ public class FeatureVector implements java.io.Serializable {
         }
     }
 
-    public void setFactor(double factor) {
-        this.m_factor = factor;
-    }
-
-    public void setFeatures(int[] dimensions, double[] values) {
-        this.m_dims = dimensions;
-        this.m_vals = values;
-    }
-
+    /**
+     * Returns the number of features in this vector, i.e. the number of set dimensions.
+     *
+     * @return the number of features in this vector.
+     */
     public int size() {
         return m_dims.length;
     }
 
+    @Override
     public String toString() {
         String s = "";
         for (int i = 0; i < m_vals.length; i++) {
