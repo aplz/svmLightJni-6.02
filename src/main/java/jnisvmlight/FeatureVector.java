@@ -39,7 +39,7 @@ import java.util.stream.IntStream;
 public class FeatureVector {
     // field names must not be changed!
     protected int[] m_dims;
-    protected double m_factor;
+    protected double m_factor = 1.0;
     protected double[] m_vals;
 
     /**
