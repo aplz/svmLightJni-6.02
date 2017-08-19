@@ -22,7 +22,7 @@
 package jnisvmlight;
 
 import java.io.*;
-import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 
@@ -38,7 +38,7 @@ public class SVMLightModel {
      * Reads an SVM-light model from a URL and creates an SVMLightModel object in Java. The format is compatible to the SVM-light model
      * files.
      */
-    public static SVMLightModel readSVMLightModelFromURL(URL file) throws ParseException {
+    public static SVMLightModel fromPath(Path file) throws ParseException {
 
         LabeledFeatureVector[] lfv;
 
@@ -57,7 +57,7 @@ public class SVMLightModel {
         int linecnt = 0;
         try {
 
-            BufferedReader bi = new BufferedReader(new InputStreamReader(file.openStream()));
+            BufferedReader bi = new BufferedReader(new InputStreamReader(new FileInputStream(file.toFile())));
             String line = null;
             linecnt++;
             line = bi.readLine();
@@ -194,6 +194,7 @@ public class SVMLightModel {
         this.m_linWeights = new double[(int) m_highFeatIdx + 1];
         for (int i = 0; i < m_docs.length; i++) {
             for (int j = 0; j < m_docs[i].m_dims.length; j++) {
+
                 m_linWeights[m_docs[i].m_dims[j]] += m_docs[i].m_factor * m_docs[i].m_label * m_docs[i].m_vals[j];
             }
         }
