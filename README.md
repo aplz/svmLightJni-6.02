@@ -1,10 +1,9 @@
 # svm light JNI
 
-This project is a Java Native Interface for Thorsten Joachims' [svm_light-6.02](https://www.cs.cornell.edu/People/tj/svm_light/).
-It is based upon Tom Crecelius' and Martin Theobald's [original version](http://people.mpi-inf.mpg.de/~mtb/svmlight/) but provides a fix that enables
+This project is a Java Native Interface for Thorsten Joachims' [svm_light-6.02](https://www.cs.cornell.edu/People/tj/svm_light/). It is based upon Tom Crecelius' and Martin Theobald's [original version](http://people.mpi-inf.mpg.de/~mtb/svmlight/) but provides a fix that enables
 the training of Ranking SVMs. 
 In the original version, the parameter _query id_ was neither propagated nor imported from training data.
-This has been fixed and tested [here](SVMLightInterface.test).
+This has been fixed and tested [here](https://github.com/aplz/svmLightJni-6.02/blob/master/src/test/java/jnisvmlight/SVMLightInterfaceTest.java).
 
 ## Resources
 Apart from the Java code, this repository includes the following resources:
@@ -27,5 +26,5 @@ Note: for Windows using the mingw compiler, the path in the Makefile might need 
 * Original JNI: http://people.mpi-inf.mpg.de/~mtb/svmlight/
 
 ## Licenses
-SVM Light is subject to Thorsten Joachim's [license](LICENSE.txt).
+SVM Light is subject to Thorsten Joachim's [license](https://github.com/aplz/svmLightJni-6.02/blob/master/lib/svmlight-6.02/LICENSE.txt).
 
