@@ -81,24 +81,20 @@ public class SVMLightInterface {
                     continue;
                 }
                 String tokens[] = line.trim().split("[ \\t\\n\\x0B\\f\\r\\[\\]]");
-                int queryId = 0;
+                String queryId = null;
                 if (tokens.length < 2) {
                     throw new IllegalArgumentException("Each line must contain a label and a feature");
                 }
                 String label = tokens[0];
-                String factor;
+                int featureStart = 1;
                 if (tokens[1].startsWith("qid")) {
-                    queryId = Integer.parseInt(tokens[1].substring(tokens[1].indexOf(":") + 1, tokens[1].length()));
-                    // TODO: hack: factor is set to 1.0 when reading data like this
-                    // Especially when reading the ranking svm training data, the parser does currently not support factors
-                    factor = "1.0";
-                } else {
-                    factor = tokens[1].substring(0, tokens[1].length() - 1);
+                    queryId = tokens[1].substring(tokens[1].indexOf(":") + 1, tokens[1].length());
+                    featureStart = 2;
                 }
 
                 List<String> dimensionsList = Lists.newArrayList();
                 List<String> valuesList = Lists.newArrayList();
-                for (int tokenCounter = 2; tokenCounter < tokens.length; tokenCounter++) {
+                for (int tokenCounter = featureStart; tokenCounter < tokens.length; tokenCounter++) {
                     String dimensionValue = tokens[tokenCounter];
                     if (dimensionValue.trim().startsWith("#")) {
                         // this could be a comment at the end of the line.
@@ -118,12 +114,12 @@ public class SVMLightInterface {
                 }
                 if (dimensionsList.size() > 0) {
                     double labelValue = Double.parseDouble(label);
-                    double factorValue = Double.parseDouble(factor);
                     int[] dimensions = dimensionsList.stream().mapToInt(Integer::parseInt).toArray();
                     double[] values = valuesList.stream().mapToDouble(Double::parseDouble).toArray();
                     LabeledFeatureVector labeledFeatureVector = new LabeledFeatureVector(labelValue, dimensions, values);
-                    labeledFeatureVector.setFactor(factorValue);
-                    labeledFeatureVector.setQueryId(queryId);
+                    if (queryId != null) {
+                        labeledFeatureVector.setQueryId(Integer.parseInt(queryId));
+                    }
                     data.add(labeledFeatureVector);
                 }
 
